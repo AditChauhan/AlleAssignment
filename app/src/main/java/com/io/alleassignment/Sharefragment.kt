@@ -2,12 +2,15 @@ package com.io.alleassignment
 
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -31,16 +34,20 @@ class ShareFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_share, container, false)
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                permissions(),
+                1
+            )
+        }
+
         imageViewTop = binding.imageViewTop
         viewModel = ViewModelProvider(requireActivity())[ImageViewModel::class.java]
-        setupAdapter()
-        setOnclick()
-        viewModel.selectedImageUri.observe(viewLifecycleOwner) {}
-        return binding.root
-    }
+        checkPermissions()
 
-
-    private fun setupAdapter() {
         imageAdapter = ImageAdapter(requireContext())
         binding.horizontalRecyclerView.adapter = imageAdapter
         val horizontalLayoutManager = LinearLayoutManager(
@@ -48,13 +55,66 @@ class ShareFragment : Fragment() {
         )
         binding.horizontalRecyclerView.layoutManager = horizontalLayoutManager
         if (checkPermission()) {
-            loadImageIntoImageView(getAllScreenshots()[0])
-            viewModel.setSelectedImage(getAllScreenshots()[0])
-            imageAdapter.setData(getAllScreenshots())
+            loadImages()
+
         } else {
             requestPermission()
         }
+        setOnclick()
+        viewModel.selectedImageUri.observe(viewLifecycleOwner) {}
+        loadImages()
+        return binding.root
     }
+
+    private fun permissions(): Array<String> {
+        val p: Array<String> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            storage_permissions_33
+        } else {
+            storage_permissions
+        }
+        return p
+    }
+
+    private var storage_permissions = arrayOf<String>(
+        android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        android.Manifest.permission.READ_EXTERNAL_STORAGE
+    )
+
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+    var storage_permissions_33 = arrayOf<String>(
+        android.Manifest.permission.READ_MEDIA_IMAGES,
+        android.Manifest.permission.READ_MEDIA_AUDIO,
+        android.Manifest.permission.READ_MEDIA_VIDEO
+    )
+
+
+    private fun checkPermissions(){
+
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                android.Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+        } else {
+
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
+                READ_EXTERNAL_STORAGE_PERMISSION
+            )
+        }
+    }
+
+
+    private fun loadImages() {
+        println("1010 load images")
+        imageAdapter.setData(getAllScreenshots())
+        loadImageIntoImageView(getAllScreenshots()[0])
+        viewModel.setSelectedImage(getAllScreenshots()[0])
+    }
+
+
+
 
 
     private fun setOnclick() {
@@ -85,7 +145,11 @@ class ShareFragment : Fragment() {
     ) {
         if (requestCode == READ_EXTERNAL_STORAGE_PERMISSION) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                loadImages()
             } else {
+
+                requestPermission()
             }
         }
     }

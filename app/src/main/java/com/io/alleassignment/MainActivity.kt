@@ -1,19 +1,13 @@
 package com.io.alleassignment
 
-import android.annotation.SuppressLint
-import android.content.ContentResolver
-import android.database.ContentObserver
-import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
+import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.provider.MediaStore
-import androidx.annotation.UiThread
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
