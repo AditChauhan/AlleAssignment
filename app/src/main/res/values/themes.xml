@@ -1,0 +1,12 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.AlleAssignment" parent="Theme.Material3.DayNight.NoActionBar">
+
+
+            <item name="colorPrimary">@color/googleBlue</item>
+            <item name="colorPrimaryDark">@color/googleBlueDark</item>
+            <item name="colorAccent">@color/googleBlueAccent</item>
+
+    </style>
+
+    <style name="Theme.AlleAssignment" parent="Base.Theme.AlleAssignment" />
+</resources>
