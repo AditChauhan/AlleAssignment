@@ -25,27 +25,28 @@ class ShareFragment : Fragment() {
     lateinit var imageAdapter: ImageAdapter
     private lateinit var viewModel: ImageViewModel
     private val READ_EXTERNAL_STORAGE_PERMISSION = 1
-    private lateinit var uri: Uri
 
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_share, container, false)
         imageViewTop = binding.imageViewTop
         viewModel = ViewModelProvider(requireActivity())[ImageViewModel::class.java]
-        val horizontalLayoutManager = LinearLayoutManager(
-            requireContext(),
-            LinearLayoutManager.HORIZONTAL,
-            false
-        )
+        setupAdapter()
+        setOnclick()
+        viewModel.selectedImageUri.observe(viewLifecycleOwner) {}
+        return binding.root
+    }
 
+
+    private fun setupAdapter() {
         imageAdapter = ImageAdapter(requireContext())
-
-        binding.horizontalRecyclerView.layoutManager = horizontalLayoutManager
         binding.horizontalRecyclerView.adapter = imageAdapter
-
+        val horizontalLayoutManager = LinearLayoutManager(
+            requireContext(), LinearLayoutManager.HORIZONTAL, false
+        )
+        binding.horizontalRecyclerView.layoutManager = horizontalLayoutManager
         if (checkPermission()) {
             loadImageIntoImageView(getAllScreenshots()[0])
             viewModel.setSelectedImage(getAllScreenshots()[0])
@@ -53,22 +54,21 @@ class ShareFragment : Fragment() {
         } else {
             requestPermission()
         }
+    }
 
-        viewModel.selectedImageUri.observe(viewLifecycleOwner) {
-        }
+
+    private fun setOnclick() {
         imageAdapter.setOnItemClickListener { position ->
             val selectedUri = imageAdapter.getItemAtPosition(position)
             loadImageIntoImageView(selectedUri)
             viewModel.setSelectedImage(selectedUri)
         }
-        return binding.root
     }
 
 
     private fun checkPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
-            requireContext(),
-            android.Manifest.permission.READ_EXTERNAL_STORAGE
+            requireContext(), android.Manifest.permission.READ_EXTERNAL_STORAGE
         ) == PackageManager.PERMISSION_GRANTED
     }
 
@@ -81,9 +81,7 @@ class ShareFragment : Fragment() {
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         if (requestCode == READ_EXTERNAL_STORAGE_PERMISSION) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -102,10 +100,7 @@ class ShareFragment : Fragment() {
     }
 
     private fun loadImageIntoImageView(uri: Uri) {
-        Glide.with(requireContext())
-            .load(uri)
-            .centerCrop()
-            .into(imageViewTop)
+        Glide.with(requireContext()).load(uri).centerCrop().into(imageViewTop)
         viewModel.setSelectedImage(uri)
     }
 }

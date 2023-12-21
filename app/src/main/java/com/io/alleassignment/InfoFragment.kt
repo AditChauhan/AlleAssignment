@@ -26,8 +26,7 @@ class InfoFragment : Fragment() {
     private lateinit var uri: Uri
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_info, container, false)
         val rootView = binding.root
@@ -36,24 +35,27 @@ class InfoFragment : Fragment() {
             uri = it
         }
 
+        setDescription()
+
+        return rootView
+    }
+
+
+    private fun setDescription() {
         uri = viewModel.selectedImageUri.value!!
         val inputStream: InputStream? = requireActivity().contentResolver.openInputStream(uri)
-        val recognizerOptions = TextRecognizerOptions.Builder()
-            .build()
+        val recognizerOptions = TextRecognizerOptions.Builder().build()
 
         val recognizer = TextRecognition.getClient(recognizerOptions)
         val selectedBitmap: Bitmap = BitmapFactory.decodeStream(inputStream)
         val image: InputImage = InputImage.fromBitmap(selectedBitmap, 0)
-        recognizer.process(image)
-            .addOnSuccessListener { textResults ->
+        recognizer.process(image).addOnSuccessListener { textResults ->
                 val extractedText: String = textResults.text
                 binding.descriptionTextView.text = extractedText
-            }
-            .addOnFailureListener { e ->
+            }.addOnFailureListener { e ->
                 e.printStackTrace()
             }
 
-        return rootView
     }
 
     private fun addChip(chipText: String) {
